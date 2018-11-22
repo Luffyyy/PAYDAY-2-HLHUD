@@ -1,0 +1,34 @@
+<mod name="HLHUD" global_key="HLHUD" core_class="Core.lua" min_lib_version="3.12">
+    <Classes directory="Classes">
+    </Classes>
+    <Hooks directory="Hooks">
+        <hook source_file="lib/managers/hudmanager" file="HUDManager.lua"/>
+        <hook source_file="lib/managers/hud/hudteammate" file="HUDTeammate.lua"/>
+    </Hooks>
+
+    <Localization directory="Localization" default="english.txt"/>
+    <AddFiles directory="Assets">
+        <font path="hl/hud_font" load="true"/>
+        <texture path="hl/hud_font"/>
+        <font path="hl/hud_font_bold" load="true"/>
+        <texture path="hl/hud_font_bold"/>
+        <png path="hl/hud_icons"/>
+    </AddFiles>
+    <Options auto_build_menu="true" auto_load="true" value_changed="self:OptionsChanged">
+        <options>
+            <merge_data area_bg="half"/>
+            <option type="bool" default_value="true" name="HLAmmoTotal"/>
+            <option type="bool" default_value="false" name="NoTeammates"/>
+            <option type="bool" default_value="false" name="NoAITeammates"/>
+            <option type="bool" default_value="true" name="AddBlendMode"/>
+            <option type="bool" default_value="false" name="LightUpAmmo"/>
+            <option type="number" show_value="true" default_value="0.75" min="0" max="1" name="Opacity"/>
+            <option type="number" show_value="true" default_value="1" min="0" max="1" name="LightOpacity"/>
+            <option type="number" show_value="true" default_value="1" min="0" max="1.5" name="Scale"/>
+            <option type="number" show_value="true" default_value="1" min="0.1" max="1" name="Spacing"/>
+            <option type="color" default_value="Color('ffa000')" name="MainColor"/>
+            <option type="color" default_value="Color('afff10')" name="NegColor"/>
+            <button reset_button="true" shallow_reset="true" name="ResetOptions"/>
+        </options>
+    </Options>
+</mod>

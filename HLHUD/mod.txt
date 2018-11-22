@@ -1,0 +1,5 @@
+{
+	"name" : "Half-Life HUD",
+	"description" : "A HUD mod recreating the Half-Life HUD",
+	"author" : "Luffy"
+}
