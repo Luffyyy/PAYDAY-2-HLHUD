@@ -65,7 +65,7 @@ end
 function HUDStatsScreen:hl_add_equipment(i, id, icon, value, from_string)
     local white = tweak_data.screen_colors.text
     local pnl = self._hl_tm_panel:child(tostring(i))
-    if pnl and (from_string or value > 0) then
+    if pnl then
         local icon, rect = tweak_data.hud_icons:get_icon_data(icon)
         local equipment = pnl:child("equipment")
         local np = HLHUD:make_panel(equipment, id)
@@ -77,23 +77,8 @@ function HUDStatsScreen:hl_add_equipment(i, id, icon, value, from_string)
         })
 
         if from_string then
-            local amounts = ""
-            local zero_ranges = {}
-            for i, amount in ipairs(value) do
-                local amount_str = string.format("%01d", amount)
-        
-                if i > 1 then amounts = amounts .. "|" end
-        
-                if amount == 0 then
-                    local current_length = string.len(amounts)
-                    table.insert(zero_ranges, {current_length, current_length + string.len(amount_str)})
-                end
-        
-                amounts = amounts .. amount_str
-            end
-        
+            local amounts, zero_ranges = HUDTeammate:hl_get_amounts_and_range(value)
             amount:set_text(amounts)
-        
             for _, range in ipairs(zero_ranges) do
                 amount:set_range_color(range[1], range[2], white:with_alpha(0.5))
             end

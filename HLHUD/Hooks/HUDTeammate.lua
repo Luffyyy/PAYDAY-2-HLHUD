@@ -70,11 +70,6 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         local icon = HLHUD:make_icon(np, nil, "icon", {w = 16, h = 16, center_y = amount:center_y() - (notme and 0 or 4)})
         if notme then
             amount:set_x(icon:right() + 4)
-            np:set_w(amount:right())
-        else
-            icon:set_x(amount:right() + 10)
-            np:set_w(icon:right())
-            np:set_right(self._hl_equipment_panel:w())
         end
     end
 
@@ -151,7 +146,9 @@ end
 
 function HUDTeammate:hl_request_equipment(this)
     for _, data in pairs(self._hl_equipment_data) do
-        this:hl_add_equipment(self._id, data.id, data.icon, data.amount)
+        if data.visible then
+            this:hl_add_equipment(self._id, data.id, data.icon, data.amount, data.from_string)
+        end
     end
 end
 
@@ -174,14 +171,37 @@ function HUDTeammate:hl_align_equipment()
     local prev
     for _, p in pairs(self._hl_equipment_panel:children()) do
         if p:visible() then
+            local amount, icon = p:child("amount"), p:child("icon")
+            managers.hud:make_fine_text(amount)
             if self._main_player then
-                p:set_bottom(prev and prev:y() or self._hl_equipment_panel:h())
+                icon:set_x(amount:right() + 10)
+                p:set_w(icon:right())
+                p:set_rightbottom(self._hl_equipment_panel:w(), prev and prev:y() or self._hl_equipment_panel:h())
             else
+                p:set_w(amount:right())
                 p:set_x(prev and prev:right() + 4 or 0)
             end
             prev = p
         end
     end
+end
+
+function HUDTeammate:hl_get_amounts_and_range(tbl)
+    local amounts = ""
+    local zero_ranges = {}
+    for i, amount in pairs(tbl) do
+        local amount_str = string.format("%01d", amount)
+
+        if i > 1 then amounts = amounts .. "|" end
+
+        if amount == 0 then
+            local current_length = string.len(amounts)
+            table.insert(zero_ranges, {current_length, current_length + string.len(amount_str)})
+        end
+
+        amounts = amounts .. amount_str
+    end
+    return amounts, zero_ranges
 end
 
 function HUDTeammate:hl_set_quipment(name, data, from_string)
@@ -203,7 +223,7 @@ function HUDTeammate:hl_set_quipment(name, data, from_string)
         local amount_t = equipment:child("amount")
         local icon_b = equipment:child("icon")
 
-        if type(amount) == "table" then
+        if type(amount) == "table" and data.amount then
             amount = data.amount
             local icon, texture_rect = tweak_data.hud_icons:get_icon_data(data.icon, name == "grenades" and {0,0,32,32} or nil)
             icon_b:set_image(icon, unpack(texture_rect))
@@ -216,12 +236,30 @@ function HUDTeammate:hl_set_quipment(name, data, from_string)
                 HLHUD:lightup(icon_b)
             end
         end
-        
-        amount_t:set_text(tostring(amount))
 
-        equipment:set_visible(tonumber(amount) > 0)
+        local visible = false
+        if from_string and type(amount) == "table" then
+            local amounts, zero_ranges = self:hl_get_amounts_and_range(amount)
+            amount_t:set_text(amounts)
+            local color = amount_t:color()
+            for _, range in ipairs(zero_ranges) do
+                amount_t:set_range_color(range[1], range[2], color:with_alpha(0.5))
+            end
+
+            for _, val in pairs(amount) do
+                if val > 0 then
+                    visible = true
+                end
+            end
+        else
+            visible = (tonumber(amount) or 0) > 0
+            amount_t:set_text(tostring(amount))
+        end
+        
+        equipment:set_visible(visible)
         self:hl_align_equipment()
         saved_data.amount = amount
+        saved_data.visible = visible
         saved_data.from_string = from_string
     end
 end
@@ -250,7 +288,8 @@ HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment", function(self, data) se
 HLHUD.Hook:Post(HUDTeammate, "set_cable_tie", function(self, data) self:hl_set_quipment("cableties", data) end)
 HLHUD.Hook:Post(HUDTeammate, "set_grenades", function(self, data) self:hl_set_quipment("grenades", data) end)
 
-HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_from_string", function(self, i, data) self:hl_set_quipment("deployable", data.amount, true) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_from_string", function(self, data) self:hl_set_quipment("deployable", data, true) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount_from_string", function(self, i, data) self:hl_set_quipment("deployable", data.amount, true) end)
 HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount", function(self, i, data) self:hl_set_quipment("deployable", data.amount) end)
 HLHUD.Hook:Post(HUDTeammate, "set_cable_ties_amount", function(self, amount) self:hl_set_quipment("cableties", amount) end)
 HLHUD.Hook:Post(HUDTeammate, "set_grenades_amount", function(self, data) self:hl_set_quipment("grenades", data.amount) end)
