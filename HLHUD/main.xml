@@ -4,6 +4,9 @@
     <Hooks directory="Hooks">
         <hook source_file="lib/managers/hudmanager" file="HUDManager.lua"/>
         <hook source_file="lib/managers/hud/hudteammate" file="HUDTeammate.lua"/>
+        <hook source_file="lib/managers/hud/newhudstatsscreen" file="HUDStatsScreen.lua"/>
+        <hook source_file="lib/managers/hud/hudchat" file="HUDChat.lua"/>
+        
     </Hooks>
 
     <Localization directory="Localization" default="english.txt"/>
@@ -18,17 +21,20 @@
         <options>
             <merge_data area_bg="half"/>
             <option type="bool" default_value="true" name="HLAmmoTotal"/>
-            <option type="bool" default_value="false" name="NoTeammates"/>
-            <option type="bool" default_value="false" name="NoAITeammates"/>
+            <option type="bool" default_value="true" name="NoTeammates"/>
+            <option type="bool" default_value="true" name="NoAITeammates"/>
             <option type="bool" default_value="true" name="AddBlendMode"/>
             <option type="bool" default_value="false" name="LightUpAmmo"/>
+            <option type="bool" default_value="false" name="VanillaValues"/>
             <option type="number" show_value="true" default_value="0.75" min="0" max="1" name="Opacity"/>
             <option type="number" show_value="true" default_value="1" min="0" max="1" name="LightOpacity"/>
             <option type="number" show_value="true" default_value="1" min="0" max="1.5" name="Scale"/>
             <option type="number" show_value="true" default_value="1" min="0.1" max="1" name="Spacing"/>
+            <option type="number" show_value="true" default_value="0" min="0" max="1600" name="ChatX"/>
+            <option type="number" show_value="true" default_value="660" min="0" max="960" name="ChatY"/>
             <option type="color" default_value="Color('ffa000')" name="MainColor"/>
-            <option type="color" default_value="Color('afff10')" name="NegColor"/>
-            <button reset_button="true" shallow_reset="true" name="ResetOptions"/>
+            <option type="color" default_value="Color('ff1010')" name="NegColor"/>
+            <button reset_button="true" shallow_reset="true" name="ResetOptions"/> 
         </options>
     </Options>
 </mod>
