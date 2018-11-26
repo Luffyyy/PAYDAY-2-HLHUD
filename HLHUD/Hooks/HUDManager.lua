@@ -1,4 +1,4 @@
-Hooks:PostHook(HUDManager, "init", "HLHUDInit", function(self)
+HLHUD.Hook:Post(HUDManager, "init", function(self)
 	HLHUD.main_ws = HLHUD.main_ws or managers.gui_data:create_fullscreen_workspace()
 	HLHUD.main_panel = HLHUD.main_panel or HLHUD:make_panel(HLHUD.main_ws, "HLHUD")
 	
@@ -8,6 +8,14 @@ Hooks:PostHook(HUDManager, "init", "HLHUDInit", function(self)
 	--HLHUD.bottom_hud:set_w(HLHUD.bottom_hud:w() - 32)
 	--HLHUD.bottom_hud:set_center_x(p:center_x())
 	self:hl_update()
+end)
+
+HLHUD.Hook:Post(HUDManager, "set_enabled", function(self)
+	HLHUD.main_ws:show()
+end)
+
+HLHUD.Hook:Post(HUDManager, "set_disabled", function(self)
+	HLHUD.main_ws:hide()
 end)
 
 function HUDManager:hl_update()
@@ -24,6 +32,10 @@ function HUDManager:hl_update()
 		end
 		self:hl_align_teammate_panels()
 	end
+	if self._hud_chat_access then
+		self._hud_chat_access:hl_update()
+		self._hud_chat_ingame:hl_update()
+	end
 end
 
 function HUDManager:hl_align_teammate_panels()
@@ -33,9 +45,9 @@ function HUDManager:hl_align_teammate_panels()
 			tm._hl_panel:set_bottom(HLHUD.bottom_hud:h())
 		elseif tm:hl_visible() then
 			if prev then
-				tm._hl_panel:set_bottom(prev:top())
+				tm._hl_panel:set_bottom(prev:top() - 2)
 			else
-				tm._hl_panel:set_bottom(HLHUD.bottom_hud:h() - tm._hl_panel:h())
+				tm._hl_panel:set_bottom(HLHUD.bottom_hud:h() - 36)
 			end
 			prev = tm._hl_panel
 		end

@@ -17,12 +17,14 @@
 	"HLHUDMainColorDescID" : "The main color of the hud; most of the elements will use this color.",
 	"HLHUDNegColorTitleID" : "Negative color",
 	"HLHUDNegColorDescID" : "The negative color of the hud.",
-	"HLHUDLightUpAmmoTitleID" : "Light-up ammo count",
-	"HLHUDLightUpAmmoDescID" : "Lights up the ammo count too when changed.",
+	"HLHUDLightUpAmmoTitleID" : "Light-up ammo and equipment count",
+	"HLHUDLightUpAmmoDescID" : "Lights up the ammo and equipment count too when changed.",
 	"HLHUDOpacityTitleID" : "Default opacity",
 	"HLHUDOpacityDescID" : "The default opacity of the HUD when not lighted.",
 	"HLHUDLightOpacityTitleID" : "Light-up opacity",
 	"HLHUDLightOpacityDescID" : "The opacity of the HUD when lighted.",
+	"HLHUDVanillaValuesTitleID" : "Vanilla health and armor values",
+	"HLHUDVanillaValuesyDescID" : "By default the values are a percentage, this will show the true values (non decimal)",
     "HLHUDResetOptionsTitleID" : "Reset options",
     "HLHUDResetOptionsDescID" : "Resets all options into their default value."
 }
