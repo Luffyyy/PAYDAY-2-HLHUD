@@ -34,19 +34,19 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         end
 
         if opt.make_line then
-            HLHUD:make_icon(np, {240, 0, 2, 40}, "line", {h = line_h, x = text:right() + 4, center_y = text:center_y()})
+            HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {h = line_h, x = text:right() + 4, center_y = text:center_y()})
             np:grow(6)
         end
         return np
     end
     
-    self._hl_health = create_text({rect = {84,28,24,24}, make_line = true})
-    self._hl_armor = create_text({rect = {51,24,28,40}, icon_offset = 8})
+    self._hl_health = create_text({rect = HLHUD.TextureRects.Health, make_line = true})
+    self._hl_armor = create_text({rect = HLHUD.TextureRects.Armor, icon_offset = 8})
     
     local icon = self._hl_armor:child("icon")
     local fill = HLHUD:make_panel(self._hl_armor, "fill", {layer = 2, visible = me, h = icon:h()})
 
-    local rect = {3, 25, 36, 38}
+    local rect = HLHUD.TextureRects.ArmorFill
     local icon_w, icon_h = self:rectwh(rect)
     local fill_icon = HLHUD:make_icon(fill, rect, "icon", {w = icon_w, h = icon_h})
     fill:set_w(fill_icon:w())
@@ -56,9 +56,9 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         local np = HLHUD:make_panel(self._hl_ply_panel, i == 1 and "primary" or "secondary", {h = panel_h, bottom = bottom, visible = i == 1})
         local current_ammo = HLHUD:make_text(np, "current", {font_size = font_size})
         local total_ammo = HLHUD:make_text(np, "total", {font_size = font_size, x = current_ammo:right() + (notme and 8 or 18)})
-        local icon = HLHUD:make_icon(np, {8, 74, 8, 16}, "icon", {visible = self._main_player, w = notme and 0, x = total_ammo:right() + 10, center_y = current_ammo:center_y() - 4})
+        local icon = HLHUD:make_icon(np, HLHUD.TextureRects.Ammo.assault_rifle, "icon", {visible = self._main_player, w = notme and 0, x = total_ammo:right() + 10, center_y = current_ammo:center_y() - 4})
     
-        HLHUD:make_icon(np, {240, 0, 2, 40}, "line", {x = current_ammo:right() + 4, h = line_h, center_y = current_ammo:center_y()})
+        HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {x = current_ammo:right() + 4, h = line_h, center_y = current_ammo:center_y()})
 
         np:set_w(icon:right())
     end
@@ -123,14 +123,33 @@ function HUDTeammate:hl_update(mngr)
     apply.color = nil
     self._hl_name:configure(apply)
 
-    if notme then
-        primary:set_x(self._hl_armor:right() + 8)
-    else
-        primary:set_right(plyp:w())
+    for i=1,2 do
+        local current = i == 1 and primary or secondary
+        local eq_current = i == 1 and managers.blackmarket:equipped_primary() or managers.blackmarket:equipped_secondary()
+        if eq_current then
+            local wep_tweak = tweak_data.weapon[eq_current.weapon_id]
+            if wep_tweak then
+                local rect = HLHUD.TextureRects.Ammo[wep_tweak.categories[#wep_tweak.categories]] or HLHUD.TextureRects.Ammo.assault_rifle
+                if wep_tweak.projectile_type == "rocket_frag" or wep_tweak.projectile_type == "launcher_frag_m32" then
+                    rect = HLHUD.TextureRects.Ammo.rocket
+                end
+                if rect then
+                    local icon = current:child("icon")
+                    icon:set_texture_rect(unpack(rect))
+                    icon:set_size(rect[3], rect[4])
+                    icon:set_center_y(current:child("current"):center_y() - 4)
+                    current:set_w(icon:right())
+                end
+            end
+        end
+        current:set_bottom(bottom)
+        if notme then
+            current:set_x(self._hl_armor:right() + 8)
+        else
+            current:set_right(plyp:w())
+        end
     end
-    primary:set_bottom(bottom)
-    secondary:set_x(primary:x())
-    secondary:set_bottom(bottom)
+
     if notme then
         self._hl_equipment_panel:set_y(primary:bottom() + 2)
     else

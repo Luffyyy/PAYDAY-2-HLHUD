@@ -1,5 +1,26 @@
 HLHUD.Hook = Hooks:QuickClass("HLHUD")
-
+HLHUD.TextureRects = {
+	Health = {84,28,24,24},
+	Armor = {51,24,28,40},
+	ArmorFill = {3, 25, 36, 38},
+	Line = {240, 0, 2, 40},
+	Ammo = {
+		pistol = {12, 76, 7, 15},
+		assault_rifle = {36, 76, 8, 23},
+		smg = {36, 76, 8, 23}, -- same as ar
+		lmg = {36, 76, 8, 23}, -- same as ar
+		minigun = {36, 76, 8, 23}, -- same as ar
+		snp = {60, 73, 8, 24},
+		revolver = {60, 73, 8, 24}, -- same as snp
+		grenade_launcher = {10, 99, 12, 18},
+		shotgun = {34, 98, 12, 20},
+		rocket = {59, 97, 11, 25},
+		bow = {7, 120, 14, 25},
+		crossbow = {7, 120, 14, 25}, -- same as bow
+		saw = {28, 120, 25, 25},
+		flamethrower = {53, 122, 22, 21},
+	},
+}
 local function extra_funcs(ret, opt)
 	if not opt then return ret end
 

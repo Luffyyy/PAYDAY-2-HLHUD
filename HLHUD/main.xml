@@ -6,9 +6,7 @@
         <hook source_file="lib/managers/hud/hudteammate" file="HUDTeammate.lua"/>
         <hook source_file="lib/managers/hud/newhudstatsscreen" file="HUDStatsScreen.lua"/>
         <hook source_file="lib/managers/hud/hudchat" file="HUDChat.lua"/>
-        
     </Hooks>
-
     <Localization directory="Localization" default="english.txt"/>
     <AddFiles directory="Assets">
         <font path="hl/hud_font" load="true"/>
