@@ -28,9 +28,11 @@ HLHUD.Hook:Post(HUDStatsScreen, "recreate_right", function(self)
         make_text("name", tm._hl_name:text(), tm._hl_name:color())
 		local health = tm._hl_health:child("text")
 		if not tm._ai then
-			make_text("health", health:text(), health:color())
-			make_text("primary_total", tm._hl_ammo.primary.total, nil, 20)
-			make_text("secondary_total", "| " .. tm._hl_ammo.secondary.total, nil, 2)
+            make_text("health", health:text(), health:color())
+            if not tm._hl_in_custody then
+                make_text("primary_total", tm._hl_ammo.primary.total, nil, 20)
+                make_text("secondary_total", "| " .. tm._hl_ammo.secondary.total, nil, 2)
+            end
 		end
 
         HLHUD:make_panel(prev, "equipment", {y = prev_t:bottom() + 2})

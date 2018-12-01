@@ -34,8 +34,8 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         end
 
         if opt.make_line then
-            HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {h = line_h, x = text:right() + 4, center_y = text:center_y()})
-            np:grow(6)
+            HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {h = line_h, x = text:right() + 10, center_y = text:center_y()})
+            np:grow(12)
         end
         return np
     end
@@ -55,17 +55,17 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
     for i=1,2 do
         local np = HLHUD:make_panel(self._hl_ply_panel, i == 1 and "primary" or "secondary", {h = panel_h, bottom = bottom, visible = i == 1})
         local current_ammo = HLHUD:make_text(np, "current", {font_size = font_size})
-        local total_ammo = HLHUD:make_text(np, "total", {font_size = font_size, x = current_ammo:right() + (notme and 8 or 18)})
+        local total_ammo = HLHUD:make_text(np, "total", {font_size = font_size, x = current_ammo:right() + (notme and 8 or 22)})
         local icon = HLHUD:make_icon(np, HLHUD.TextureRects.Ammo.assault_rifle, "icon", {visible = self._main_player, w = notme and 0, x = total_ammo:right() + 10, center_y = current_ammo:center_y() - 4})
     
-        HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {x = current_ammo:right() + 4, h = line_h, center_y = current_ammo:center_y()})
+        HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {x = current_ammo:right() + 8, h = line_h, center_y = current_ammo:center_y()})
 
         np:set_w(icon:right())
     end
 
     self._hl_equipment_panel = HLHUD:make_panel(self._hl_ply_panel, "equipment", {w = 150, h = panel_h * (notme and 1 or 3)})
     local function make_equipment(name)
-        local np = HLHUD:make_panel(self._hl_equipment_panel, name, {h = panel_h, bottom = self._hl_equipment_panel:h()})
+        local np = HLHUD:make_panel(self._hl_equipment_panel, name, {visible = false, h = panel_h, bottom = self._hl_equipment_panel:h()})
         local amount = HLHUD:make_text(np, "amount", {text = "99", font_size = font_size})
         local icon = HLHUD:make_icon(np, nil, "icon", {w = 16, h = 16, center_y = amount:center_y() - (notme and 0 or 4)})
         if notme then
@@ -82,11 +82,12 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
 end)
 
 function HUDTeammate:hl_update(mngr)
-	local plyp = self._hl_ply_panel
-	
-    plyp:set_visible(not self._ai)
-
+    local plyp = self._hl_ply_panel
+    local primary, secondary = self._hl_ply_panel:child("primary"), self._hl_ply_panel:child("secondary")
+    local player_vis = not self._ai
+    
     self._hl_panel:set_visible(self:hl_visible())
+    HLHUD:Apply({self._hl_health, self._hl_armor, primary, secondary}, {alpha = player_vis and 1 or 0})
 
     local notme = not self._main_player
 
@@ -101,7 +102,7 @@ function HUDTeammate:hl_update(mngr)
     
     self._hl_health:set_bottom(bottom)
     self._hl_armor:set_bottom(bottom)
-	self._hl_armor:set_x(self._hl_health:right() + (notme and 2 or 188))
+	self._hl_armor:set_x(self._hl_health:right() + (notme and 2 or 168))
 
     local apply = {
         alpha = HLHUD.Options:GetValue("Opacity"),
@@ -112,7 +113,7 @@ function HUDTeammate:hl_update(mngr)
     for _, p in pairs({self._hl_armor, self._hl_health}) do
         HLHUD:Apply({p:child("text"), p:child("icon"), p:child("line")}, apply)
     end
-    for _, p in pairs({self._hl_ply_panel:child("primary"), self._hl_ply_panel:child("secondary")}) do
+    for _, p in pairs({primary, secondary}) do
         HLHUD:Apply({p:child("current"), p:child("total"), p:child("icon"), p:child("line")}, apply)
     end
     for _, p in pairs(self._hl_equipment_panel:children()) do
@@ -130,7 +131,7 @@ function HUDTeammate:hl_update(mngr)
             local wep_tweak = tweak_data.weapon[eq_current.weapon_id]
             if wep_tweak then
                 local rect = HLHUD.TextureRects.Ammo[wep_tweak.categories[#wep_tweak.categories]] or HLHUD.TextureRects.Ammo.assault_rifle
-                if wep_tweak.projectile_type == "rocket_frag" or wep_tweak.projectile_type == "launcher_frag_m32" then
+                if wep_tweak.projectile_type == "rocket_frag" or wep_tweak.projectile_type == "rocket_ray_frag" then
                     rect = HLHUD.TextureRects.Ammo.rocket
                 end
                 if rect then
@@ -151,7 +152,7 @@ function HUDTeammate:hl_update(mngr)
     end
 
     if notme then
-        self._hl_equipment_panel:set_y(primary:bottom() + 2)
+        self._hl_equipment_panel:set_y((self._ai and primary or self._hl_name):bottom() + 2)
     else
         self._hl_equipment_panel:set_right(self._hl_ply_panel:w())
         self._hl_equipment_panel:set_bottom(primary:y() - 2)
@@ -163,10 +164,13 @@ function HUDTeammate:hl_update(mngr)
     self:hl_align_equipment()
 end
 
+local actual_equipment = {deployable = true, cableties = true, grenades = true}
 function HUDTeammate:hl_request_equipment(this)
     for _, data in pairs(self._hl_equipment_data) do
-        if data.visible then
-            this:hl_add_equipment(self._id, data.id, data.icon, data.amount, data.from_string)
+        if data.visible and not self._hl_in_custody then
+            if not self._ai or not actual_equipment[data.id] then
+                this:hl_add_equipment(self._id, data.id, data.icon, data.amount, data.from_string)
+            end
         end
     end
 end
@@ -177,6 +181,9 @@ function HUDTeammate:rectwh(opt)
 end
 
 function HUDTeammate:hl_visible()
+    if self._main_player and self._hl_in_custody then
+        return false
+    end
     if HLHUD.Options:GetValue("NoTeammates") then
         return self._main_player
     end
@@ -223,7 +230,7 @@ function HUDTeammate:hl_get_amounts_and_range(tbl)
     return amounts, zero_ranges
 end
 
-function HUDTeammate:hl_set_quipment(name, data, from_string)
+function HUDTeammate:hl_set_equipment(name, data, from_string)
     local equipment = self._hl_equipment_panel:child(name)
     if equipment then
         local amount = data
@@ -303,18 +310,20 @@ function HUDTeammate:hl_set_health(data)
         HLHUD:lightup(self._hl_health:child("line"))
     end
 end
-HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment", function(self, data) self:hl_set_quipment("deployable", data) end)
-HLHUD.Hook:Post(HUDTeammate, "set_cable_tie", function(self, data) self:hl_set_quipment("cableties", data) end)
-HLHUD.Hook:Post(HUDTeammate, "set_grenades", function(self, data) self:hl_set_quipment("grenades", data) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment", function(self, data) self:hl_set_equipment("deployable", data) end)
+HLHUD.Hook:Post(HUDTeammate, "set_cable_tie", function(self, data) self:hl_set_equipment("cableties", data) end)
+HLHUD.Hook:Post(HUDTeammate, "set_grenades", function(self, data) self:hl_set_equipment("grenades", data) end)
 
-HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_from_string", function(self, data) self:hl_set_quipment("deployable", data, true) end)
-HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount_from_string", function(self, i, data) self:hl_set_quipment("deployable", data.amount, true) end)
-HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount", function(self, i, data) self:hl_set_quipment("deployable", data.amount) end)
-HLHUD.Hook:Post(HUDTeammate, "set_cable_ties_amount", function(self, amount) self:hl_set_quipment("cableties", amount) end)
-HLHUD.Hook:Post(HUDTeammate, "set_grenades_amount", function(self, data) self:hl_set_quipment("grenades", data.amount) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_from_string", function(self, data) self:hl_set_equipment("deployable", data, true) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount_from_string", function(self, i, data) self:hl_set_equipment("deployable", data.amount, true) end)
+HLHUD.Hook:Post(HUDTeammate, "set_deployable_equipment_amount", function(self, i, data) self:hl_set_equipment("deployable", data.amount) end)
+HLHUD.Hook:Post(HUDTeammate, "set_cable_ties_amount", function(self, amount) self:hl_set_equipment("cableties", amount) end)
+HLHUD.Hook:Post(HUDTeammate, "set_grenades_amount", function(self, data) self:hl_set_equipment("grenades", data.amount) end)
 
-HLHUD.Hook:Post(HUDTeammate, "add_special_equipment", function(self, data) 
-    table.insert(self._hl_equipment_data, clone(data))
+HLHUD.Hook:Post(HUDTeammate, "add_special_equipment", function(self, data)
+    clone_data = clone(data)
+    clone_data.visible = true
+    table.insert(self._hl_equipment_data, clone_data)
 end)
 
 HLHUD.Hook:Post(HUDTeammate, "remove_special_equipment", function(self, id)
@@ -326,17 +335,41 @@ HLHUD.Hook:Post(HUDTeammate, "remove_special_equipment", function(self, id)
     end
 end)
 
-HLHUD.Hook:Post(HUDTeammate, "set_special_equipment_amount", function(self, amount)
+HLHUD.Hook:Post(HUDTeammate, "set_special_equipment_amount", function(self, id, amount)
     for i, data in pairs(self._hl_equipment_data) do
         if data.id == id then
             data.amount = amount
+            data.visible = amount > 0
             break
         end
     end
 end)
 
-HLHUD.Hook:Post(HUDTeammate, "set_health", HUDTeammate.hl_set_health)
-HLHUD.Hook:Post(HUDTeammate, "set_custom_radial", HUDTeammate.hl_set_health)
+HLHUD.Hook:Post(HUDTeammate, "set_condition", function(self, icon_data)
+    if self._main_player then
+        self._hl_panel:set_visible(icon_data ~= "mugshot_in_custody")
+    else
+        self._hl_panel:set_alpha(icon_data == "mugshot_in_custody" and (self._main_player and 0 or 0.25) or 1)
+    end
+    self._hl_in_custody = icon_data == "mugshot_in_custody"
+    self._hl_swansong_active = icon_data == "mugshot_swansong"
+end)
+
+HLHUD.Hook:Post(HUDTeammate, "clear_special_equipment", function(self)
+    self._hl_equipment_data = {}
+end)
+
+HLHUD.Hook:Post(HUDTeammate, "set_health", function(self, data)
+    if not self._hl_swansong_active then
+        self:hl_set_health(data)
+    end
+end)
+
+HLHUD.Hook:Post(HUDTeammate, "set_custom_radial", function(self, data)
+    if self._hl_swansong_active then
+        self:hl_set_health(data)
+    end
+end)
 
 HLHUD.Hook:Post(HUDTeammate, "set_name", function(self, name)
     self._hl_name:set_text(name)

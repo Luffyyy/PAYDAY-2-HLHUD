@@ -21,7 +21,7 @@ end)
 function HUDManager:hl_update()
 	HLHUD:LayoutScaledWorkspace(HLHUD.main_ws, HLHUD.Options:GetValue("Scale"), HLHUD.Options:GetValue("Spacing"))
 	HLHUD.bottom_hud:set_size(HLHUD.main_panel:size())
-	local x,y = 12,5
+	local x,y = 16,5
 	HLHUD.bottom_hud:grow(-x*2,-y*2)
 	HLHUD.bottom_hud:set_center(HLHUD.main_panel:center())
 	if self._teammate_panels then
