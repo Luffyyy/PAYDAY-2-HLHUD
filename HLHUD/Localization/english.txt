@@ -25,6 +25,10 @@
 	"HLHUDLightOpacityDescID" : "The opacity of the HUD when lighted.",
 	"HLHUDVanillaValuesTitleID" : "Vanilla health and armor values",
 	"HLHUDVanillaValuesyDescID" : "By default the values are a percentage, this will show the true values (non decimal)",
+	"HLHUDChatXTitleID" : "Chat X position",
+	"HLHUDChatXDescID" : "Changes the chat's X position",
+	"HLHUDChatYTitleID" : "Chat Y position",
+	"HLHUDChatYDescID" : "Changes the chat's Y position",
     "HLHUDResetOptionsTitleID" : "Reset options",
     "HLHUDResetOptionsDescID" : "Resets all options into their default value."
 }

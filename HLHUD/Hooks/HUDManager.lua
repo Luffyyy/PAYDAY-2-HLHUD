@@ -1,7 +1,7 @@
 HLHUD.Hook:Post(HUDManager, "init", function(self)
 	HLHUD.main_ws = HLHUD.main_ws or managers.gui_data:create_fullscreen_workspace()
 	HLHUD.main_panel = HLHUD.main_panel or HLHUD:make_panel(HLHUD.main_ws, "HLHUD")
-	
+	HLHUD.main_ws:hide()
 	local p = HLHUD.main_panel
 	HLHUD.bottom_hud = HLHUD:make_panel(p, "bottom_panel", {layer = -1000})
 
@@ -15,6 +15,14 @@ HLHUD.Hook:Post(HUDManager, "set_enabled", function(self)
 end)
 
 HLHUD.Hook:Post(HUDManager, "set_disabled", function(self)
+	HLHUD.main_ws:hide()
+end)
+
+HLHUD.Hook:Post(HUDManager, "hide_mission_briefing_hud", function(self)
+	HLHUD.main_ws:show()
+end)
+
+HLHUD.Hook:Post(HUDManager, "show_endscreen_hud", function(self)
 	HLHUD.main_ws:hide()
 end)
 
