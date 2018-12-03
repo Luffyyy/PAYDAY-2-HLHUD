@@ -21,8 +21,8 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
     self._hl_ply_panel = HLHUD:make_panel(self._hl_panel, "temp")
     local bottom = notme and self._hl_name:bottom() + panel_h or self._hl_ply_panel:h()
     
-    local function create_text(opt)
-        local np = HLHUD:make_panel(self._hl_ply_panel, "temp", {h = panel_h, bottom = bottom})
+    local function create_text(name, opt)
+        local np = HLHUD:make_panel(self._hl_ply_panel, name, {h = panel_h, bottom = bottom})
         local icon_w, icon_h = self:rectwh(opt.rect)
         local icon = HLHUD:make_icon(np, opt.rect, "icon", {w = icon_w, h = icon_h, visible = me, x = opt.icon_offset, bottom = np:h()})
         local text = HLHUD:make_text(np, "text", {font_size = font_size, x = me and icon:right() or 0})
@@ -34,14 +34,14 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         end
 
         if opt.make_line then
-            HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {h = line_h, x = text:right() + 10, center_y = text:center_y()})
-            np:grow(12)
+            local line = HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {h = line_h, x = text:right() + (notme and 4 or 10), center_y = text:center_y()})
+            np:set_w(line:right())
         end
         return np
     end
     
-    self._hl_health = create_text({rect = HLHUD.TextureRects.Health, make_line = true})
-    self._hl_armor = create_text({rect = HLHUD.TextureRects.Armor, icon_offset = 8})
+    self._hl_health = create_text("health", {rect = HLHUD.TextureRects.Health, make_line = true})
+    self._hl_armor = create_text("armor", {rect = HLHUD.TextureRects.Armor, icon_offset = 8})
     
     local icon = self._hl_armor:child("icon")
     local fill = HLHUD:make_panel(self._hl_armor, "fill", {layer = 2, visible = me, h = icon:h()})
@@ -58,7 +58,7 @@ HLHUD.Hook:Post(HUDTeammate, "init", function(self)
         local total_ammo = HLHUD:make_text(np, "total", {font_size = font_size, x = current_ammo:right() + (notme and 8 or 22)})
         local icon = HLHUD:make_icon(np, HLHUD.TextureRects.Ammo.assault_rifle, "icon", {visible = self._main_player, w = notme and 0, x = total_ammo:right() + 10, center_y = current_ammo:center_y() - 4})
     
-        HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {x = current_ammo:right() + 8, h = line_h, center_y = current_ammo:center_y()})
+        HLHUD:make_icon(np, HLHUD.TextureRects.Line, "line", {x = current_ammo:right() + (notme and 4 or 8), h = line_h, center_y = current_ammo:center_y()})
 
         np:set_w(icon:right())
     end
@@ -83,11 +83,10 @@ end)
 
 function HUDTeammate:hl_update(mngr)
     local plyp = self._hl_ply_panel
-    local primary, secondary = self._hl_ply_panel:child("primary"), self._hl_ply_panel:child("secondary")
-    local player_vis = not self._ai
+    local primary, secondary = plyp:child("primary"), plyp:child("secondary")
     
     self._hl_panel:set_visible(self:hl_visible())
-    HLHUD:Apply({self._hl_health, self._hl_armor, primary, secondary}, {alpha = player_vis and 1 or 0})
+    self._hl_ply_panel:set_visible(not self._ai)
 
     local notme = not self._main_player
 
@@ -98,7 +97,6 @@ function HUDTeammate:hl_update(mngr)
 
     local panel_h = notme and 20 or 32
     local bottom = notme and self._hl_name:bottom() + panel_h or self._hl_ply_panel:h()
-    local primary, secondary = plyp:child("primary"), plyp:child("secondary")
     
     self._hl_health:set_bottom(bottom)
     self._hl_armor:set_bottom(bottom)
@@ -152,7 +150,7 @@ function HUDTeammate:hl_update(mngr)
     end
 
     if notme then
-        self._hl_equipment_panel:set_y((self._ai and primary or self._hl_name):bottom() + 2)
+        self._hl_equipment_panel:set_y(primary:bottom() + 2)
     else
         self._hl_equipment_panel:set_right(self._hl_ply_panel:w())
         self._hl_equipment_panel:set_bottom(primary:y() - 2)
@@ -256,7 +254,7 @@ function HUDTeammate:hl_set_equipment(name, data, from_string)
             saved_data.icon = data.icon
         end
         
-        if HLHUD.Options:GetValue("LightUpAmmo") then
+        if self._main_player and HLHUD.Options:GetValue("LightUpAmmo") then
             if amount_t:text() ~= tostring(amount) then
                 HLHUD:lightup(amount_t)
                 HLHUD:lightup(icon_b)
@@ -304,7 +302,7 @@ function HUDTeammate:hl_set_health(data)
     local color = p >= 0.26 and HLHUD.orange_color or HLHUD.red_color
     text:set_color(color)
     self._hl_health:child("icon"):set_color(color)
-    if prev ~= text:text() then
+    if self._main_player and prev ~= text:text() then
         HLHUD:lightup(self._hl_health:child("text"))
         HLHUD:lightup(self._hl_health:child("icon"))
         HLHUD:lightup(self._hl_health:child("line"))
@@ -394,7 +392,7 @@ HLHUD.Hook:Post(HUDTeammate, "set_armor", function(self, data)
     fill:set_h(p * self._hl_armor:child("icon"):h())
     fill:set_bottom(self._hl_armor:h())
     fill:child("icon"):set_world_bottom(fill:world_bottom())
-    if prev ~= text:text() then
+    if self._main_player and prev ~= text:text() then
         HLHUD:lightup(self._hl_armor:child("text"))
         HLHUD:lightup(self._hl_armor:child("icon"))
         HLHUD:lightup(self._hl_armor:child("fill"):child("icon"))
@@ -423,7 +421,7 @@ HLHUD.Hook:Post(HUDTeammate, "set_ammo_amount_by_type", function(self, type, max
     self._hl_ammo[type].current = current_clip
     self._hl_ammo[type].total = current_left
     
-    if HLHUD.Options:GetValue("LightUpAmmo") then
+    if self._main_player and HLHUD.Options:GetValue("LightUpAmmo") then
         if prev_clip ~= ammo_clip:text() or prev_total ~= ammo_total:text() then
             for _, v in pairs({ammo_clip, ammo_total, weapon_panel:child("icon"), weapon_panel:child("line")}) do
                 HLHUD:lightup(v)
@@ -438,7 +436,7 @@ HLHUD.Hook:Post(HUDTeammate, "_set_weapon_selected", function(self, id)
 	secondary:set_visible(id == 1)
     primary:set_visible(id ~= 1)
     local current = id == 1 and secondary or primary
-    if HLHUD.Options:GetValue("LightUpAmmo") then
+    if self._main_player and HLHUD.Options:GetValue("LightUpAmmo") then
         for _, v in pairs({current:child("current"), current:child("total"), current:child("icon"), current:child("line")}) do
            HLHUD:lightup(v)
         end
