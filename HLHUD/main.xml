@@ -1,5 +1,5 @@
 <mod name="HLHUD" global_key="HLHUD" core_class="Core.lua" min_lib_version="3.20">
-    <AssetUpdates id="24035" version="1.0" provider="modworkshop"/>
+    <AssetUpdates id="24035" version="1.0.1" provider="modworkshop"/>
     <Hooks directory="Hooks">
         <hook source_file="lib/managers/hudmanager" file="HUDManager.lua"/>
         <hook source_file="lib/managers/hud/hudteammate" file="HUDTeammate.lua"/>
